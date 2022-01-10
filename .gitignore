@@ -56,11 +56,16 @@ docs/_build/
 # PyBuilder
 target/
 
-# IPython notebook
-.ipynb_checkpoints
+
 
 # Repo scratch directory
 scratch/
 
 # Misc
 .DS_Store
+
+# -------
+# IPython notebook
+.ipynb_checkpoints
+
+compare_GB_methods/catboost_info/
