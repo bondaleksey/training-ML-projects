@@ -1,10 +1,13 @@
-MANIFEST
+# MANIFEST
 # -------
 # IPython notebook
 .ipynb_checkpoints
 .vscode
 
-clustering
 
+__pycache__
+
+# local files 
+clustering
 compare_GB_models/catboost_info/
 mynetscrap
