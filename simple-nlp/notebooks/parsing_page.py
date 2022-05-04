@@ -32,15 +32,7 @@ def get_paper_info(pub):
     return result
 
 
-def parsing_article_page(soup):
-    # print("Однажды, в студеную зимнюю пору\n\
-    #     Я из лесу вышел; был сильный мороз.\n\
-    #         Гляжу, поднимается медленно в гору\n\
-    #             Лошадка, везущая хворосту воз.\n\
-    #                 И шествуя важно, в спокойствии чинном,\n\
-    #                     Лошадку ведет под уздцы мужичок\n\
-    #                         В больших сапогах, в полушубке овчинном,\n\
-    #                             В больших рукавицах… а сам с ноготок! ")        
+def parsing_article_page(soup):   
     doi = None
     au_id = []
     au_name = []
@@ -90,8 +82,12 @@ def parsing_article_page(soup):
             "udk":udk,
             "send":send,
             "type":pubtype,
-            "reference":reference}
-    # print(res)
+            "reference":reference}    
+    nc = 0
+    for val in res.values():
+        if (val=="") or (val is None):
+            nc += 1
+    res['nones_count']=nc
     return res
     
 def get_next_paragraph(text, phrase):

@@ -3,11 +3,12 @@ import pickle
 import pandas as pd
 
 class Author():
-    def __init__(self, mn_id=0, links=[],years=[], authors=set()):
+    def __init__(self, mn_id=0, links=[],years=[], authors=set(), nc = []):
         self.mn_id = mn_id
         self.article_links = links
         self.article_years = years
         self.coathors = authors
+        self.nones_count = nc
     
     def update_author_info(self, pub_info, page_info):
         self.article_links.append(pub_info["mn_link"])
@@ -17,19 +18,22 @@ class Author():
         # print(set(self.mn_id))
         # print(set(page_info["author_id"]).difference(set([self.mn_id])))
         self.coathors.update(set(page_info["author_id"]).difference(set([self.mn_id])))
+        self.nones_count.append(page_info['nones_count'])
 
     def show(self):
         print(self.mn_id)
         print(self.article_links)
         print(self.article_years)
         print(self.coathors)
+        print(self.nones_count)
         print(self.convert2dict())
     
     def convert2dict(self):
         return {self.mn_id:
             {"links":self.article_links,
              "years": self.article_years,
-             "coathors":self.coathors}}
+             "coathors":self.coathors,
+             "nones_count":self.nones_count}}
         
 # https://www.reddit.com/r/learnpython/comments/774kjr/multiple_values_in_one_cell_in_pandas/        
 class AuthorsDB():
@@ -54,6 +58,7 @@ class AuthorsDB():
                     for ind in indexes:
                         self.db[id]["links"].append(info["links"][ind])
                         self.db[id]["years"].append(info["years"][ind])
+                        self.db[id]["nones_count"].append(info["nones_count"][ind])
                     self.db[id]["coathors"].update(info["coathors"]-self.db[id]["coathors"])
     
     def check_key(self,key):        
