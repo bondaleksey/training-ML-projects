@@ -73,6 +73,12 @@ def parsing_article_page(soup):
         if doi is not None:
             doi = doi.replace("https://doi.org/","")
     udk = clean_text(get_next_paragraph(mystr, "УДК:"))
+    send = None
+    if udk is not None:
+        if "редакцию:" in udk:
+            send = re.findall(r"(?<=редакцию:\s)\S+",udk)
+            udk = re.findall(r"\S+(?=Поступила)",udk)
+    pubtype = clean_text(get_next_paragraph(mystr, "публикации:"))
     reference = clean_text(get_next_paragraph(mystr,"Образец"+"\xa0"+"цитирования:"))
     if reference is None:
         reference = clean_text(get_next_paragraph(mystr,"Образец цитирования:"))
@@ -82,6 +88,8 @@ def parsing_article_page(soup):
             "keywords":keywords,
             "doi":doi,
             "udk":udk,
+            "send":send,
+            "type":pubtype,
             "reference":reference}
     # print(res)
     return res
