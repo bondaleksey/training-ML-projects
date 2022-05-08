@@ -31,7 +31,7 @@ class Author():
     def convert2dict(self):
         return {self.mn_id:
             {"links":self.article_links,
-             "years": self.article_years,
+             " ": self.article_years,
              "coathors":self.coathors,
              "nones_count":self.nones_count}}
         
@@ -76,7 +76,9 @@ class AuthorsDB():
             print(f"ind = {ind}")
             print(f"item = {item}")
             
-    def save(self):
+    def save(self,text=''):
+        if text != '':
+            print(text)
         with open(self.filename,'wb') as outp:
             pickle.dump(self.db, outp, pickle.HIGHEST_PROTOCOL)
         
@@ -163,7 +165,9 @@ class PublicationsDB():
             print(f"ind = {ind}")
             print(f"item = {item}")
             
-    def save(self):
+    def save(self,text=''):
+        if text != '':
+            print(text)
         with open(self.filename,'wb') as outp:
             pickle.dump(self.db, outp, pickle.HIGHEST_PROTOCOL)
         
@@ -239,7 +243,9 @@ class AbstractsDB():
             print(f"row =")
             print(row)
             
-    def save(self):
+    def save(self,text=''):
+        if text != '':
+            print(text)
         with open(self.filename,'wb') as outp:
             pickle.dump(self.db, outp, pickle.HIGHEST_PROTOCOL)
         

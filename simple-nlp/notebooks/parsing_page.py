@@ -3,9 +3,15 @@ import re
 def clean_text(text):
     if text is None:
         return None
-    text = re.sub('[\n\t\xa0]','',text)
+    text = re.sub('[\n\t]','',text)
+    text = re.sub('\xa0\xa0',' ',text)
+    text = re.sub('\xa0',' ',text)
     text = text.rstrip(' ')
     text = text.lstrip(' ')
+    text = re.sub('  ',' ',text)        
+    text = re.sub('<i>','',text)
+    text = re.sub('</b>','',text)
+    text = re.sub('<b>','',text)    
     return text
 
 def parsing_author_page(soup):
@@ -42,63 +48,94 @@ def parsing_article_page(soup):
             doi = href.replace("https://doi.org/","")
         if "personid=" in href:                
         # au_name = re.findall(r"\d\"\>(.+)\<",item)
-            au_id.append(re.findall(r"(?<=personid=)\d+",str(item))[0])
-            au_name.append(item.text)
-                            
+            au_id.append(clean_text(re.findall(r"(?<=personid=)\d+",str(item))[0]))
+            au_name.append(clean_text(item.text))
+    
+    values = {"abstract":"Аннотация:",
+              "abstract_en":"Abstract:",
+            "keywords":"слова:",
+            "doi":"DOI",
+            "udk":"УДК",
+            "send":'редакцию:',
+            "type":'публикации:',
+            "reference":'цитирования:'
+    }
+    res = {}                        
     for line in soup.find_all('td',  attrs={'valign':"top"}):    
-        if "Аннотация:" in line.text or "Abstract:" in line.text:
-            mystr = line.text    
-            # reference = line.i.text 
-              
-    abstract = get_next_paragraph(mystr, "Аннотация:")
-    if abstract is None:
-        abstract = get_next_paragraph(mystr, "Abstract:")
-    if abstract is None:
-        print("We have some problems!!!\nabstract is None")
-    else:
-        abstract = clean_text(abstract)
-    keywords = get_next_paragraph(mystr, "Ключевые"+"\xa0"+"слова:")    
-    if keywords is None:
-        keywords = get_next_paragraph(mystr, "Keywords:")
-    if doi is None:
-        doi = get_next_paragraph(mystr, "DOI:")
-        if doi is not None:
-            doi = doi.replace("https://doi.org/","")
-    udk = clean_text(get_next_paragraph(mystr, "УДК:"))
-    send = None
-    if udk is not None:
-        if "редакцию:" in udk:
-            send = re.findall(r"(?<=редакцию:\s)\S+",udk)
-            udk = re.findall(r"\S+(?=Поступила)",udk)
-    pubtype = clean_text(get_next_paragraph(mystr, "публикации:"))
-    reference = clean_text(get_next_paragraph(mystr,"Образец"+"\xa0"+"цитирования:"))
-    if reference is None:
-        reference = clean_text(get_next_paragraph(mystr,"Образец цитирования:"))
-    res = { "author_names": au_name,
-            "author_id": au_id,
-            "abstract":abstract,
-            "keywords":keywords,
-            "doi":doi,
-            "udk":udk,
-            "send":send,
-            "type":pubtype,
-            "reference":reference}    
+        if "Финансовая:" in line.text or "Аннотация:" in line.text:
+            # mystr = line.text    
+            # reference = line.i.text
+            collection = line.find_all('div',  attrs={'class':"around-button"})
+            if len(collection)>1:
+                res = get_text_from_collection(collection, values) 
+            else:                
+                res = get_text_from_tag(line, values)
+            if len(res)<2:
+                print("Something goes wrong")
+            res['author_names'] = au_name
+            res['author_id'] = au_id
+            if res['doi'] is None:                
+                res['doi'] = doi
     nc = 0
     for val in res.values():
         if (val=="") or (val is None):
             nc += 1
     res['nones_count']=nc
     return res
+
+def get_text_from_collection(collection, values):    
+    result = {}
+    for k,_ in values.items():
+        result[k] = None
+        
+    for tag in collection:
+        for key, val in values.items():
+            if val in tag.text:
+                result[key]=get_paragraph(tag.text,val)
+    return result
+
+def get_paragraph(text,phrase):
+    start = text.index(phrase)
+    return clean_text(text[start+len(phrase):])
+                
+def get_text_from_tag(tag, values):    
+    result = {}
+    for k,_ in values.items():
+        result[k] = None            
+    for key, val in values.items():
+        if val == 'цитирования:':
+            result[key]=get_next_paragraph(tag.text,val)
+        else:
+            if val in tag.text:
+                result[key]=get_between_angle_brackets(tag,val)
+    return result
+
+def get_between_angle_brackets(text,phrase):
+    if type(text) != 'str':
+        text = str(text)
+    start = text.index(phrase)
+    indx = [m.start() for m in re.finditer(r"\<",text[start+len(phrase):])]  
+    end = 6
+    nstart = 0
+    for ind in indx:
+        if ind>end:
+            end = ind
+            break
+        nstart = ind    
+    return clean_text(text[start+len(phrase)+nstart:start+len(phrase)+end])
     
 def get_next_paragraph(text, phrase):
     result = None
-    # print(f" in get_next_paragraph phrase = {phrase}")
     if phrase in text: 
-        # print("phrase in text")       
         start = text.index(phrase)
-        # print(start)    
-        indx = [m.start() for m in re.finditer(r"\n",text[start:])]
-        # print(indx)
-        result = text[start+indx[0]+1:start+indx[1]]
+        indx = [m.start() for m in re.finditer(r"\n\n",text[start:])]
+        result = clean_text(text[start+len(phrase)+1:start+indx[0]])        
     return result
-    
+
+def get_regex_between_words(text,word1,word2,regex):
+    result = None
+    if (word1 in text) and (word2 in text):
+        start = text.index(word1)
+        end = text.index(word2)
+        result = re.findall(regex,text[start:end])[0] 
+    return result
