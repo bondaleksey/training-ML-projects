@@ -85,7 +85,7 @@ def parsing_article_page(soup):
     for val in res.values():
         if (val=="") or (val is None):
             nc += 1
-    res['nones_count']=nc
+    res['nrf']=nc
     return res
 
 def parsing_showamsbib(ams):

@@ -3,37 +3,52 @@ import pickle
 import pandas as pd
 
 class Author():
-    def __init__(self, mn_id=0, links=[],years=[], authors=set(), nc = []):
+    def __init__(self, mn_id = -1):
+        self.cols = ["year","nrf"]
+        
         self.mn_id = mn_id
-        self.article_links = links
-        self.article_years = years
-        self.coathors = authors
-        self.nones_count = nc
+        self.papers = {}
+        
+        # self.mn_id = mn_id
+        # self.article_links = links
+        # self.article_years = years
+        # self.coauthors = authors
+        # self.nones_count = nrf
     
-    def update_author_info(self, pub_info, page_info):
-        self.article_links.append(pub_info["mn_link"])
-        year = re.findall(r"19|20[0-9]{2}",pub_info["name"])[0]
-        self.article_years.append(year)
-        # print(set(page_info["author_id"]))
-        # print(set(self.mn_id))
-        # print(set(page_info["author_id"]).difference(set([self.mn_id])))
-        self.coathors.update(set(page_info["author_id"]).difference(set([self.mn_id])))
-        self.nones_count.append(page_info['nones_count'])
+    def update_author_info(self, pub_info, page_info):        
+        if page_info["yr"] is None:
+            year = re.findall(r"19[0-9]{2}|20[0-9]{2}",pub_info["name"])[0]
+        else:
+            year = page_info["yr"]        
+        
+        self.papers.update({
+            pub_info["mn_link"]:
+                {"year":year,
+                 "nrf":page_info['nrf']}})
+    
+    def read_from_pubdb(self, mnlink, audb):
+        for author,pubs in audb.db.items():            
+            if mnlink in pubs:                
+                self.papers.update({mnlink:pubs[mnlink]})
+                return
+        print(f'We cant find this {mnlink} in {type(self).__name__}')
+        
+            
+        
+        
+        
+        
 
     def show(self):
-        print(self.mn_id)
-        print(self.article_links)
-        print(self.article_years)
-        print(self.coathors)
-        print(self.nones_count)
+        print(self.mn_id)  
+        
+        for paper in self.papers:
+            print(paper)    
         print(self.convert2dict())
     
     def convert2dict(self):
         return {self.mn_id:
-            {"links":self.article_links,
-             " ": self.article_years,
-             "coathors":self.coathors,
-             "nones_count":self.nones_count}}
+            self.papers}
         
 # https://www.reddit.com/r/learnpython/comments/774kjr/multiple_values_in_one_cell_in_pandas/        
 class AuthorsDB():
@@ -42,24 +57,24 @@ class AuthorsDB():
         self.db = adb
         self.filename = "../data/dbase/authorsDB.pkl"
     
-    def update_data(self, adb):
-        for id, info in adb.items():
-            # if id not in self.db.keys():
-            if id not in self.db:  
-                print(f"id {id} not in self.db")
-                self.db.update({id:info})
+    def update_data(self, adb:Author):        
+        for id, info in adb.items():            
+            if id not in self.db:                                  
+                self.db.update({id:info})                
             else:
-                print(f"id {id} in self.db")
+                print(f"id {id} in self.db")                
                 if self.db[id] != info:                                    
-                    # print(f"Two info data are not equal \n{self.db[id]}\n{info}")
-                    # print(list({self.db[id]["links"]}-{info["links"]}))
-                    temp = list(set(info["links"])-set(self.db[id]["links"]))                    
-                    indexes = [info["links"].index(temp[i]) for i in range(len(temp))]
-                    for ind in indexes:
-                        self.db[id]["links"].append(info["links"][ind])
-                        self.db[id]["years"].append(info["years"][ind])
-                        self.db[id]["nones_count"].append(info["nones_count"][ind])
-                    self.db[id]["coathors"].update(info["coathors"]-self.db[id]["coathors"])
+                    # self.db[id]["coathors"].update(info["coathors"]-self.db[id]["coathors"])
+                    self.db[id].update(info)
+                    # # print(f"Two info data are not equal \n{self.db[id]}\n{info}")
+                    # # print(list({self.db[id]["links"]}-{info["links"]}))
+                    # temp = list(set(info["links"])-set(self.db[id]["links"]))                    
+                    # indexes = [info["links"].index(temp[i]) for i in range(len(temp))]
+                    # for ind in indexes:
+                    #     self.db[id]["links"].append(info["links"][ind])
+                    #     self.db[id]["years"].append(info["years"][ind])
+                    #     self.db[id]["nones_count"].append(info["nones_count"][ind])
+                                    
     
     def check_key(self,key):        
         return key in self.db
@@ -76,11 +91,12 @@ class AuthorsDB():
             print(f"ind = {ind}")
             print(f"item = {item}")
             
-    def save(self,text=''):
+    def save(self,status='write',text=''):
         if text != '':
             print(text)
-        with open(self.filename,'wb') as outp:
-            pickle.dump(self.db, outp, pickle.HIGHEST_PROTOCOL)
+        if status == 'write':    
+            with open(self.filename,'wb') as outp:
+                pickle.dump(self.db, outp, pickle.HIGHEST_PROTOCOL)
         
     def load(self):
         try:
@@ -183,11 +199,18 @@ class PublicationsDB():
             print(f"ind = {ind}")
             print(f"item = {item}")
             
-    def save(self,text=''):
+    # def save(self,text=''):
+    #     if text != '':
+    #         print(text)
+    #     with open(self.filename,'wb') as outp:
+    #         pickle.dump(self.db, outp, pickle.HIGHEST_PROTOCOL)
+        
+    def save(self,status='write',text=''):
         if text != '':
             print(text)
-        with open(self.filename,'wb') as outp:
-            pickle.dump(self.db, outp, pickle.HIGHEST_PROTOCOL)
+        if status == 'write':    
+            with open(self.filename,'wb') as outp:
+                pickle.dump(self.db, outp, pickle.HIGHEST_PROTOCOL)
         
     def load(self):
         try:
@@ -231,15 +254,17 @@ class AbstractsDB():
         # self.cols = cols[1:]
         self.filename = "../data/dbase/abstractsDB.pkl"
     
-    def update_data(self,datadict):
+    def update_data(self,datadict):        
         # https://stackoverflow.com/questions/42632470/how-to-add-dictionaries-to-a-dataframe-as-a-row        
         for id, info in datadict.items():
-            if id not in self.db.index:
-                self.db.loc[id] = info
+            print("id = ", id)
+            if id not in self.db.index:                
+                self.db.loc[id] = info                
             else:
                 for col, val in info.items():
                     if (val is not None) and (val !=""):
-                        self.db.loc[id,col] = val                
+                        self.db.loc[id,col] = val                                
+                
     
     def check_key(self,key):
         return key in self.db.index
@@ -261,11 +286,18 @@ class AbstractsDB():
             print(f"row =")
             print(row)
             
-    def save(self,text=''):
+    # def save(self,text=''):
+    #     if text != '':
+    #         print(text)
+    #     with open(self.filename,'wb') as outp:
+    #         pickle.dump(self.db, outp, pickle.HIGHEST_PROTOCOL)
+            
+    def save(self,status='write',text=''):
         if text != '':
             print(text)
-        with open(self.filename,'wb') as outp:
-            pickle.dump(self.db, outp, pickle.HIGHEST_PROTOCOL)
+        if status == 'write':    
+            with open(self.filename,'wb') as outp:
+                pickle.dump(self.db, outp, pickle.HIGHEST_PROTOCOL)
         
     def load(self):
         try:
