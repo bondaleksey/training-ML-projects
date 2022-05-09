@@ -40,7 +40,7 @@ class AuthorsDB():
     
     def __init__(self, adb={}):
         self.db = adb
-        self.filename = "../data/authorsDB.pkl"
+        self.filename = "../data/dbase/authorsDB.pkl"
     
     def update_data(self, adb):
         for id, info in adb.items():
@@ -49,7 +49,7 @@ class AuthorsDB():
                 print(f"id {id} not in self.db")
                 self.db.update({id:info})
             else:
-                print(f"id {id} in self.db.keys()")
+                print(f"id {id} in self.db")
                 if self.db[id] != info:                                    
                     # print(f"Two info data are not equal \n{self.db[id]}\n{info}")
                     # print(list({self.db[id]["links"]}-{info["links"]}))
@@ -92,43 +92,61 @@ class AuthorsDB():
 
 class Publication():
     
-    def __init__(self, mnlink, aus_id=[], doi="",udk="",send="", type="",reference=""):        
-        # self.cols = ["mn_link","author_id","doi","udk","type","references"]
-        self.mn_link = mnlink
-        self.author_id = aus_id
-        self.doi = doi
-        self.udk = udk
-        self.send = send
-        self.type = type
-        self.reference = reference        
+    def __init__(self,mn_id=0):        
+        self.cols = ["mn_link","author_id","doi","udk","send","type","reference","by","paper","jour","yr","vol","issue","pages"]
+        self.info_dict={keys:None for keys in self.cols}
+        self.pub_info_cols =["mn_link"]
+        self.page_info_cols =["author_id","doi","udk","send","type","reference","by","paper","jour","yr","vol","issue","pages"]
+        self.info_dict["mn_link"] = mn_id
+        # self.mn_link = mnlink
+        # self.author_id = aus_id
+        # self.doi = doi
+        # self.udk = udk
+        # self.send = send
+        # self.type = type
+        # self.reference = reference       
     
     def update_publication_info(self, pub_info, page_info):
-        self.mn_link = pub_info["mn_link"]
-        self.author_id = page_info["author_id"]
-        self.doi = page_info["doi"]
-        self.udk = page_info["udk"]
-        self.send = page_info["send"]
-        self.type = page_info["type"]
-        self.reference = page_info["reference"]
+        for item in self.pub_info_cols:
+            if item in pub_info:
+                self.info_dict[item] = pub_info[item]
+                
+        for item in self.page_info_cols:
+            if item in page_info:
+                self.info_dict[item] = page_info[item]
+            
+                
+        # self.mn_link = pub_info["mn_link"]
+        # self.author_id = page_info["author_id"]
+        # self.doi = page_info["doi"]
+        # self.udk = page_info["udk"]
+        # self.send = page_info["send"]
+        # self.type = page_info["type"]
+        # self.reference = page_info["reference"]
         
-    def show(self):        
-        print(self.mn_link)
-        print(self.author_id)
-        print(self.doi)
-        print(self.udk)
-        print(self.send)
-        print(self.type)
-        print(self.reference)
+    def show(self):
+        for k,v in self.info_dict.items():
+            print(k)
+            print(v)      
+        # print(self.mn_link)
+        # print(self.author_id)
+        # print(self.doi)
+        # print(self.udk)
+        # print(self.send)
+        # print(self.type)
+        # print(self.reference)
         print(self.convert2dict())
     
-    def convert2dict(self):
-        return {self.mn_link:
-            {"author_id":self.author_id,
-             "doi": self.doi,
-             "udk":self.udk,
-             "send":self.send,
-             "type":self.type,
-             "reference":self.reference}}
+    def convert2dict(self):        
+        mndic = {key:self.info_dict[key]  for key in self.info_dict.keys() if key!="mn_link"}
+        return {self.info_dict["mn_link"]:mndic}
+        # return {"mn_link":
+        #     {"author_id":self.author_id,
+        #      "doi": self.doi,
+        #      "udk":self.udk,
+        #      "send":self.send,
+        #      "type":self.type,
+        #      "reference":self.reference}}
 
 
 class PublicationsDB():
@@ -136,7 +154,7 @@ class PublicationsDB():
     def __init__(self, pdb={}):
         self.db = pdb
         # self.cols = ["mn_link","author_id","doi","udk","type","references"]
-        self.filename = "../data/publicationsDB.pkl"
+        self.filename = "../data/dbase/publicationsDB.pkl"
     
     def update_data(self,pub):
         for id, info in pub.items():
@@ -211,7 +229,7 @@ class AbstractsDB():
         self.db = pd.DataFrame(columns = cols)
         self.db.index.name = "mn_link"
         # self.cols = cols[1:]
-        self.filename = "../data/abstractsDB.pkl"
+        self.filename = "../data/dbase/abstractsDB.pkl"
     
     def update_data(self,datadict):
         # https://stackoverflow.com/questions/42632470/how-to-add-dictionaries-to-a-dataframe-as-a-row        

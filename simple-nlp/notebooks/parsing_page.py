@@ -14,16 +14,16 @@ def clean_text(text):
     text = re.sub('<b>','',text)    
     return text
 
+
 def parsing_author_page(soup):
     papers={}
     pubs= soup.find_all('td', attrs={'align':'left', 'valign':"top"})
     for indx, pub in enumerate(pubs[1:]):         
-        papers[indx+1] = get_paper_info(pub)  
+        papers[indx+1] = get_paper_info_for_author(pub)  
     return papers
 
 
-
-def get_paper_info(pub):
+def get_paper_info_for_author(pub):
     result = {}    
     name = re.sub(' +',' ',pub.text)
     result['name'] = clean_text(name)             
@@ -62,7 +62,7 @@ def parsing_article_page(soup):
     }
     res = {}                        
     for line in soup.find_all('td',  attrs={'valign':"top"}):    
-        if "Финансовая:" in line.text or "Аннотация:" in line.text:
+        if "публикации:" in line.text or "Аннотация:" in line.text:
             # mystr = line.text    
             # reference = line.i.text
             collection = line.find_all('div',  attrs={'class':"around-button"})
@@ -74,14 +74,26 @@ def parsing_article_page(soup):
                 print("Something goes wrong")
             res['author_names'] = au_name
             res['author_id'] = au_id
-            if res['doi'] is None:                
-                res['doi'] = doi
+            if doi is not None:                
+                res['doi'] = doi            
+    ams = soup.find_all('div', attrs={'class':'showamsbib'})
+    if len(ams)>0:
+        bibitem = parsing_showamsbib(ams)
+        res.update(bibitem)
+
     nc = 0
     for val in res.values():
         if (val=="") or (val is None):
             nc += 1
     res['nones_count']=nc
     return res
+
+def parsing_showamsbib(ams):
+    values = ["by","paper","jour","yr","vol","issue","pages"]      
+    text =ams[0].code.__str__()    
+    return {key:get_between_words(text,"\\"+key,'<br>') for key in values}
+        
+     
 
 def get_text_from_collection(collection, values):    
     result = {}
@@ -138,4 +150,14 @@ def get_regex_between_words(text,word1,word2,regex):
         start = text.index(word1)
         end = text.index(word2)
         result = re.findall(regex,text[start:end])[0] 
+    return result
+
+def get_between_words(text,word1,word2):
+    result = None    
+    if (word1 in text) and (word2 in text):        
+        start = text.index(word1)+len(word1)
+        # print("start",start)
+        end = text[start:].index(word2)        
+        # print('end',end)
+        result = text[start+1:start+end]        
     return result
