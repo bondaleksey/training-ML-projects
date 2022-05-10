@@ -32,13 +32,7 @@ class Author():
                 self.papers.update({mnlink:pubs[mnlink]})
                 return
         print(f'For author {author} cant find this {mnlink} in {type(self).__name__}')
-        
             
-        
-        
-        
-        
-
     def show(self):
         print(self.mn_id)  
         
@@ -275,6 +269,16 @@ class AbstractsDB():
         else:
             print(f"There is no such element in {type(self).__name__} as {key}")
                 
+ 
+    def count_abs(self):
+        print(type(self.db))
+        print(type(self.db))
+        # self.db.loc["abstract"]
+        # self.db[self.db["abstract"]==None]
+        
+        # noneabs = self.db[self.db["abstract"]==None]
+        # return noneabs
+ 
     
     def show(self):
         print("printing AbstractsDB:") 
