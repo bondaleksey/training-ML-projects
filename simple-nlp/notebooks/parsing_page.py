@@ -61,27 +61,27 @@ def parsing_article_page(soup):
             "type":'публикации:',
             "reference":'цитирования:'
     }
-    res = {}                        
+    res = {key: None for key in values.keys()}
     for line in soup.find_all('td',  attrs={'valign':"top"}):    
-        if "публикации:" in line.text or "Аннотация:" in line.text:
-            # mystr = line.text    
-            # reference = line.i.text
+        if "УДК" in line.text or "Аннотация:" in line.text:            
             collection = line.find_all('div',  attrs={'class':"around-button"})
             if len(collection)>1:
                 res = get_text_from_collection(collection, values) 
             else:                
-                res = get_text_from_tag(line, values)
-            if len(res)<2:
-                print("Something goes wrong")
-            res['author_names'] = au_name
-            res['author_id'] = au_id
-            if doi is not None:                
-                res['doi_en'] = doi
+                res = get_text_from_tag(line, values)            
+    
+    res['author_names'] = au_name
+    res['author_id'] = au_id
+    if doi is not None:                
+        res['doi_en'] = doi
     ams = soup.find_all('div', attrs={'class':'showamsbib'})    
     bibitem = parsing_showamsbib(ams)
     res.update(bibitem)
     title = soup.title.text
     if len(title)>0:
+        print(res)
+        print(res["reference"])
+        
         if res["reference"] is None:
             res["reference"] = clean_text(title)
             
