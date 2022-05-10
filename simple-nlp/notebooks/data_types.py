@@ -15,7 +15,7 @@ class Author():
         # self.coauthors = authors
         # self.nones_count = nrf
     
-    def update_author_info(self, pub_info, page_info):        
+    def update_author_info(self, pub_info, page_info):                
         if page_info["yr"] is None:
             year = re.findall(r"19[0-9]{2}|20[0-9]{2}",pub_info["name"])[0]
         else:
@@ -31,7 +31,7 @@ class Author():
             if mnlink in pubs:                
                 self.papers.update({mnlink:pubs[mnlink]})
                 return
-        print(f'We cant find this {mnlink} in {type(self).__name__}')
+        print(f'For author {author} cant find this {mnlink} in {type(self).__name__}')
         
             
         

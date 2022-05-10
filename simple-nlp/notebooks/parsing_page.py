@@ -54,6 +54,7 @@ def parsing_article_page(soup):
     values = {"abstract":"Аннотация:",
               "abstract_en":"Abstract:",
             "keywords":"слова:",
+            "doi_en":"DOI",
             "doi":"DOI",
             "udk":"УДК",
             "send":'редакцию:',
@@ -75,11 +76,15 @@ def parsing_article_page(soup):
             res['author_names'] = au_name
             res['author_id'] = au_id
             if doi is not None:                
-                res['doi'] = doi            
-    ams = soup.find_all('div', attrs={'class':'showamsbib'})
-    if len(ams)>0:
-        bibitem = parsing_showamsbib(ams)
-        res.update(bibitem)
+                res['doi_en'] = doi
+    ams = soup.find_all('div', attrs={'class':'showamsbib'})    
+    bibitem = parsing_showamsbib(ams)
+    res.update(bibitem)
+    title = soup.title.text
+    if len(title)>0:
+        if res["reference"] is None:
+            res["reference"] = clean_text(title)
+            
 
     nc = 0
     for val in res.values():
@@ -89,9 +94,14 @@ def parsing_article_page(soup):
     return res
 
 def parsing_showamsbib(ams):
-    values = ["by","paper","jour","yr","vol","issue","pages"]      
-    text =ams[0].code.__str__()    
-    return {key:get_between_words(text,"\\"+key,'<br>') for key in values}
+    values = ["by","paper","jour","yr","vol","issue","pages"]
+    if len(ams)>0:     
+        text =ams[0].code.__str__()    
+        return {key:get_between_words(text,"\\"+key,'<br>') for key in values}
+    else:
+        return {key:None for key in values}
+    
+    
         
      
 
@@ -104,6 +114,7 @@ def get_text_from_collection(collection, values):
         for key, val in values.items():
             if val in tag.text:
                 result[key]=get_paragraph(tag.text,val)
+                # result[key]=get_between_angle_brackets(tag,val)
     return result
 
 def get_paragraph(text,phrase):
@@ -140,7 +151,7 @@ def get_next_paragraph(text, phrase):
     result = None
     if phrase in text: 
         start = text.index(phrase)
-        indx = [m.start() for m in re.finditer(r"\n\n",text[start:])]
+        indx = [m.start() for m in re.finditer(r"\n",text[start:])]
         result = clean_text(text[start+len(phrase)+1:start+indx[0]])        
     return result
 
