@@ -168,7 +168,17 @@ def get_between_words(text,word1,word2):
     if (word1 in text) and (word2 in text):        
         start = text.index(word1)+len(word1)
         # print("start",start)
-        end = text[start:].index(word2)        
+        if word2 in text[start:]:
+            end = text[start:].index(word2)        
         # print('end',end)
-        result = text[start+1:start+end]        
+            result = text[start+1:start+end]        
+        else:
+            if word2 == '<br>':
+                word2 = '<br/>'
+                if word2 in text[start:]:                    
+                    end = text[start:].index(word2)        
+                # print('end',end)
+                    result = text[start+1:start+end]        
+                else:                                            
+                    result = text[start+1:]          
     return result
