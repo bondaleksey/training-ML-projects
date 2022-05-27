@@ -7,6 +7,7 @@
 
 __pycache__
 
-# local files 
+# local files
+clustering/data_cl/
 compare_GB_models/catboost_info/
 mynetscrap
