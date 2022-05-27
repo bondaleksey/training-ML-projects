@@ -8,6 +8,5 @@
 __pycache__
 
 # local files 
-clustering
 compare_GB_models/catboost_info/
 mynetscrap
