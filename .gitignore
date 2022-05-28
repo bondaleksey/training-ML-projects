@@ -8,6 +8,7 @@
 __pycache__
 
 # local files
+anomaly-detection/data-an
 clustering/data_cl/
 compare_GB_models/catboost_info/
 mynetscrap
