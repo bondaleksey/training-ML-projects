@@ -8,6 +8,7 @@
 __pycache__
 
 # local files
+reco-system/data_rs
 anomaly-detection/data-an
 clustering/data_cl/
 compare_GB_models/catboost_info/
