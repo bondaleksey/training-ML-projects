@@ -1,7 +1,7 @@
 My training-ML-projects 
 =======================
 
-Here you can find my Machine Learning projects which are implemented from January 2022 to June 2022.
+Here you can find my Machine Learning projects which are implemented from January 2022 to May 2022.
 
 - **anomaly-detection**: search for anomalies by methods "Distance-based", "Density-based", "OneClassSVM", "Isolation Forest",
 - **clustering**: comparison of the clustering methods "Kmean", "DBSCAN", "Hierarhical",
